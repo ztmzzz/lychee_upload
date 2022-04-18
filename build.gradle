@@ -1,0 +1,53 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+}
+
+group 'cn.ztmzzz'
+version '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+
+shadowJar {
+    // 完整名称为 baseName-version-classifier.jar
+//    baseName = project.name
+//    archiveBaseName.set('shadow')
+    // 默认为 '-all' 为 null 则去除该参数
+//    archiveClassifier.set('null')
+//    version = project.version
+//    archiveVersion.set('')
+
+
+    // 方法数超过 65535 会报错, 需要打开下面这个配置
+    //zip64 = true
+
+    // 去除和添加文件 META-INF
+    // include '.... 文件'
+    // exclude '... 文件'
+
+    // 如果有 Main 函数, 如下配置启动类
+    manifest {
+        attributes 'Main-Class': 'cn.ztmzz.lychee_upload.MainWindow'
+    }
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.13.2'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.2.2'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.13.2'
+    implementation 'org.apache.httpcomponents:httpclient:4.5.13'
+    implementation 'org.apache.httpcomponents:httpmime:4.5.13'
+    implementation 'org.apache.httpcomponents:fluent-hc:4.5.13'
+}
+
+test {
+    useJUnitPlatform()
+}
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
