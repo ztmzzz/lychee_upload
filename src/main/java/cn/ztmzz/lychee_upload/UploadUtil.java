@@ -153,7 +153,7 @@ public class UploadUtil {
         }
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
         builder.addTextBody("albumID", albumID);
-        builder.addBinaryBody("0", bos.toByteArray(), ContentType.APPLICATION_OCTET_STREAM, dateStr);
+        builder.addBinaryBody("0", bos.toByteArray(), ContentType.APPLICATION_OCTET_STREAM, dateStr + ".png");
         HttpEntity multipart = builder.build();
         String res = commonMethodEx(multipart, "Photo::add");
 //        System.out.println(res);
