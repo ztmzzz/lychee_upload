@@ -89,7 +89,7 @@ public class MainWindow {
         int label_width = 80, label_height = 30;
         int text_x = 100, text_y = 20;
         int text_width = 300, text_height = 30;
-        int button_x = 10, button_y ;
+        int button_x = 10, button_y;
         int button_width = 180, button_height = 70;
         int gap = 40;
 
@@ -143,7 +143,8 @@ public class MainWindow {
                 try {
                     message.setText("");
                     pic_output.setText("");
-                    upload_and_get_url(pic_input, upload_album, message, pic_output);
+                    String res = upload(pic_input.getText(), upload_album.getText());
+                    check_upload_res(res, message, pic_output);
                 } catch (Exception e1) {
                     message.setText(e1.getMessage());
                 }
@@ -161,8 +162,9 @@ public class MainWindow {
                 Clipboard c = Toolkit.getDefaultToolkit().getSystemClipboard();
                 Transferable tf = c.getContents(null);
                 String[] img_last_name = new String[]{"jpg", "png", "gif", "jpeg", "bmp", "tiff", "raw", "webp", "svg"};
-                if (tf.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
-                    try {
+                try {
+                    if (tf.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+
                         Object o = tf.getTransferData(DataFlavor.javaFileListFlavor);
                         List<File> files = castList(o, File.class);
                         String file_url = files.get(0).toString();
@@ -171,14 +173,21 @@ public class MainWindow {
                         String last_name = file_url.substring(dot + 1);
                         if (Arrays.asList(img_last_name).contains(last_name)) {
                             pic_input.setText(file_url);
-                            upload_and_get_url(pic_input, upload_album, message, pic_output);
+                            String res = upload(pic_input.getText(), upload_album.getText());
+                            check_upload_res(res, message, pic_output);
                         } else {
                             message.setText("不是图片");
                         }
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        message.setText(ex.getMessage());
+
+                    } else if (tf.isDataFlavorSupported(DataFlavor.imageFlavor)) {
+                        Image upload_img = (Image) tf.getTransferData(DataFlavor.imageFlavor);
+                        pic_input.setText("剪贴板文件");
+                        String res = upload(upload_img, upload_album.getText());
+                        check_upload_res(res, message, pic_output);
                     }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    message.setText(ex.getMessage());
                 }
             }
         });
@@ -226,9 +235,7 @@ public class MainWindow {
         }
     }
 
-
-    private static void upload_and_get_url(JTextField pic_input, JTextField upload_album, JTextField message, JTextField pic_output) throws Exception {
-        String res = upload(pic_input.getText(), upload_album.getText());
+    private static void check_upload_res(String res, JTextField message, JTextField pic_output) {
         if (res.equals("false")) {
             message.setText("上传失败");
         } else {

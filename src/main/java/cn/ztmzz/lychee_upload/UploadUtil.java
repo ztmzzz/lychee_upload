@@ -14,8 +14,13 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.message.BasicHeader;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
 
 public class UploadUtil {
@@ -127,8 +132,47 @@ public class UploadUtil {
         return res;
     }
 
+    public static String photo_add(String album_name, Image upload_img) throws Exception {
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+        String dateStr = sdf.format(cal.getTime());
+
+        //image转换byte[]
+        int width = upload_img.getWidth(null);
+        int height = upload_img.getHeight(null);
+        BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Graphics g = bi.getGraphics();
+        g.drawImage(upload_img, 0, 0, width, height, null);
+        g.dispose();
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ImageIO.write(bi, "png", bos);
+
+        String albumID = get_album_id(album_name);
+        if (albumID.equals("false")) {
+            albumID = albums_add(album_name, "0");
+        }
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+        builder.addTextBody("albumID", albumID);
+        builder.addBinaryBody("0", bos.toByteArray(), ContentType.APPLICATION_OCTET_STREAM, dateStr);
+        HttpEntity multipart = builder.build();
+        String res = commonMethodEx(multipart, "Photo::add");
+//        System.out.println(res);
+        return res;
+    }
+
     public static String upload(String filepath, String album_name) throws Exception {
         String photo_id = photo_add(album_name, filepath);
+        System.out.println(photo_id);
+        String photo_url_json = photo_get(photo_id);
+        System.out.println(photo_url_json);
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode node = mapper.readTree(photo_url_json);
+        String photo_url = domain + '/' + node.get("url").asText();
+        return photo_url;
+    }
+
+    public static String upload(Image upload_img, String album_name) throws Exception {
+        String photo_id = photo_add(album_name, upload_img);
         System.out.println(photo_id);
         String photo_url_json = photo_get(photo_id);
         System.out.println(photo_url_json);
